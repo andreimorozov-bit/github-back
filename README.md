@@ -45,17 +45,21 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Test
+## Endpoints
 
 ```bash
-# unit tests
-$ npm run test
+- GET http://localhost:3000/github-repos[?search=name]
+list of all repositoriaes from the database matching the search name if provided
 
-# e2e tests
-$ npm run test:e2e
+- GET http://localhost:3000/github-repos/:id
+get repository by id
 
-# test coverage
-$ npm run test:cov
+- GET http://localhost:3000/github-repos/reset/
+force synchronization database with github api and reset current timer
+
+- POST http://localhost:3000/github-repos/settings
+body {"updateIntervalMinutes": 60}
+change update interval
 ```
 
 ## Support
