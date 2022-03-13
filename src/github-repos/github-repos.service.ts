@@ -13,7 +13,7 @@ import { GithubSettingsDto } from './dto/github-settings.dto';
 @Injectable()
 export class GithubReposService implements OnModuleInit {
   private settings = {
-    numberOfItems: 10,
+    numberOfItems: 25,
     updateInterval: 60,
     theInterval: null,
   };
@@ -61,6 +61,7 @@ export class GithubReposService implements OnModuleInit {
 
   async getRepos(): Promise<GithubRepos[]> {
     const query = this.githubReposRepository.createQueryBuilder('github_repos');
+    query.orderBy('github_repos.stargazers_count', 'DESC');
     const githubRepos = await query.getMany();
     return githubRepos;
   }
@@ -75,6 +76,8 @@ export class GithubReposService implements OnModuleInit {
   async getReposBySearch(search: string): Promise<GithubRepos[]> {
     const query = this.githubReposRepository.createQueryBuilder('github_repos');
     query.where({ name: ILike(`%${search}%`) });
+    query.orWhere({ id: ILike(`%${search}%`) });
+    query.orderBy('github_repos.stargazers_count', 'DESC');
     const githubRepos = await query.getMany();
     return githubRepos;
   }
@@ -87,7 +90,7 @@ export class GithubReposService implements OnModuleInit {
           Authorization: `token ${process.env.GITHUB_TOKEN}`,
         },
         params: {
-          q: 'language:javascript',
+          q: 'stars:>=50000',
           sort: 'stars',
           order: 'desc',
           per_page: this.settings.numberOfItems,
