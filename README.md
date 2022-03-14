@@ -24,8 +24,8 @@ $ npm run start:prod
 ## Endpoints
 
 ```bash
-- GET /github-repos[?search=name]
-list of all repositoriaes from the database matching the search name if provided
+- GET /github-repos[?search=searchstring]
+list of all repositoriaes from the database matching the search name or id if provided
 
 - GET /github-repos/:id
 get repository by id
