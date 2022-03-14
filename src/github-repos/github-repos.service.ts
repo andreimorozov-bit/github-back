@@ -13,8 +13,9 @@ import { GithubSettingsDto } from './dto/github-settings.dto';
 @Injectable()
 export class GithubReposService implements OnModuleInit {
   private settings = {
+    // set default settings for automatic synchronization
     numberOfItems: 25,
-    updateInterval: 60,
+    updateInterval: 20,
     theInterval: null,
   };
   constructor(
@@ -26,11 +27,14 @@ export class GithubReposService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
+    // synchronize the database after module initialization
+    // and start updating it on corresponding time intervals
     await this.syncGithub();
     this.startUpdateInterval();
   }
 
   async startUpdateInterval() {
+    // start updating the database every x minutes
     await this.checkUpdateInterval();
     this.settings.theInterval = setInterval(async () => {
       await this.syncGithub();
@@ -38,10 +42,14 @@ export class GithubReposService implements OnModuleInit {
   }
 
   stopUpdateInterval() {
+    // stop automatic synchronization of repositories in the database
     clearInterval(this.settings.theInterval);
   }
 
   async checkUpdateInterval() {
+    // check if update interval is stored in the database
+    // and set the local variable for it
+    // if no interval is in the database use default (20 minutes)
     const query =
       this.githubSettingsRepository.createQueryBuilder('github_settings');
     const githubSettings = await query.getOne();
@@ -55,11 +63,14 @@ export class GithubReposService implements OnModuleInit {
   }
 
   async syncGithub() {
+    // delete all repositories stored in the database
+    // and get new ones from github API
     await this.deleteAllRepos();
     await this.updateRepos();
   }
 
   async getRepos(): Promise<GithubRepos[]> {
+    // select all repositoriaes from the database ordered by stars desc
     const query = this.githubReposRepository.createQueryBuilder('github_repos');
     query.orderBy('github_repos.stargazers_count', 'DESC');
     const githubRepos = await query.getMany();
@@ -67,6 +78,7 @@ export class GithubReposService implements OnModuleInit {
   }
 
   async getReposById(id: string): Promise<GithubRepos> {
+    // select repository from the database by id
     const query = this.githubReposRepository.createQueryBuilder('github_repos');
     query.where({ id });
     const githubRepos = await query.getOne();
@@ -74,6 +86,8 @@ export class GithubReposService implements OnModuleInit {
   }
 
   async getReposBySearch(search: string): Promise<GithubRepos[]> {
+    // select repositories from the database by part of id or name
+    // ordered by stars desc
     const query = this.githubReposRepository.createQueryBuilder('github_repos');
     query.where({ name: ILike(`%${search}%`) });
     query.orWhere({ id: ILike(`%${search}%`) });
@@ -83,6 +97,8 @@ export class GithubReposService implements OnModuleInit {
   }
 
   async updateRepos(): Promise<AxiosResponse<unknown>> {
+    // get repositories with the most number of stars from github API
+    // and store them in the database
     const response = this.httpService.get(
       'https://api.github.com/search/repositories',
       {
@@ -107,12 +123,15 @@ export class GithubReposService implements OnModuleInit {
   }
 
   async getSettings(): Promise<GithubSettings> {
+    // get update interval in minutes from the database
     const query =
       this.githubSettingsRepository.createQueryBuilder('github_settings');
     return await query.getOne();
   }
 
   async setSettings(
+    // create settings in the database or update if exist
+    // force synchronization to set new update interval
     githubSettings: GithubSettingsDto,
   ): Promise<GithubSettings> {
     const settings = await this.githubSettingsRepository.findOne();
@@ -129,6 +148,9 @@ export class GithubReposService implements OnModuleInit {
   }
 
   async forceSync(): Promise<void> {
+    // stop currently running update interval
+    // force database synchronisation with github API
+    // start new interval
     this.stopUpdateInterval();
     await this.syncGithub();
     this.startUpdateInterval();
@@ -136,6 +158,7 @@ export class GithubReposService implements OnModuleInit {
   }
 
   async deleteAllRepos() {
+    // delete all repositories from the database
     await getConnection()
       .createQueryBuilder()
       .delete()
