@@ -34,7 +34,7 @@ export class GithubReposService implements OnModuleInit {
     await this.checkUpdateInterval();
     this.settings.theInterval = setInterval(async () => {
       await this.syncGithub();
-    }, this.settings.updateInterval * 1000);
+    }, this.settings.updateInterval * 1000 * 60);
   }
 
   stopUpdateInterval() {

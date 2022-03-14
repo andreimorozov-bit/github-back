@@ -24,7 +24,7 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Check github API every x minutes for repositories with the most number of stars
 
 ## Installation
 
@@ -56,6 +56,9 @@ get repository by id
 
 - GET http://localhost:3000/github-repos/reset/
 force synchronization database with github api and reset current timer
+
+- GET http://localhost:3000/github-repos/settings
+get settings
 
 - POST http://localhost:3000/github-repos/settings
 body {"updateIntervalMinutes": 60}
